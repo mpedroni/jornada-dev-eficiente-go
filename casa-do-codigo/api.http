@@ -1,0 +1,9 @@
+### Create an author
+POST http://localhost:8080/authors
+Content-Type: application/json
+
+{
+  "name": "Bruce Wayne",
+  "email": "bruce@wayne.com",
+  "description": "Bruce Wayne is the owner of Wayne Enterprises and also Batman at free time"
+}
