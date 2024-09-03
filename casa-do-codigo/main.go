@@ -19,8 +19,7 @@ func main() {
 		var body CreateAuthorRequest
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			fmt.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "unable to decode the request body")
+			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
 
