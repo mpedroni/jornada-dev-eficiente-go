@@ -26,7 +26,8 @@ func (c *CreateAuthorRequest) Validate() error {
 type HttpErrorResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 	Message   string    `json:"message"`
-	Details   []string  `json:"details"`
+	Detail    string    `json:"detail,omitempty"`
+	Details   []string  `json:"details,omitempty"`
 }
 
 func main() {
@@ -35,7 +36,14 @@ func main() {
 	mux.HandleFunc("POST /authors", func(w http.ResponseWriter, r *http.Request) {
 		body := &CreateAuthorRequest{}
 		if err := json.NewDecoder(r.Body).Decode(body); err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			json.NewEncoder(w).Encode(HttpErrorResponse{
+				Timestamp: time.Now().UTC(),
+				Message:   http.StatusText(http.StatusBadRequest),
+				Detail:    "Invalid request body",
+			})
 			return
 		}
 
@@ -48,6 +56,7 @@ func main() {
 			resp := HttpErrorResponse{
 				Timestamp: time.Now().UTC(),
 				Message:   http.StatusText(http.StatusBadRequest),
+				Detail:    "One or more invalid fields. Fix it and try again.",
 				Details:   details,
 			}
 
