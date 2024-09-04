@@ -30,20 +30,34 @@ type HttpErrorResponse struct {
 	Details   []string  `json:"details,omitempty"`
 }
 
+func httpError(w http.ResponseWriter, status int, detail string, details ...[]string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	var dd []string
+	if len(details) > 0 {
+		dd = details[0]
+	}
+
+	json.NewEncoder(w).Encode(HttpErrorResponse{
+		Timestamp: time.Now().UTC(),
+		Message:   http.StatusText(status),
+		Detail:    detail,
+		Details:   dd,
+	})
+}
+
+func HttpBadRequest(w http.ResponseWriter, detail string, details ...[]string) {
+	httpError(w, http.StatusBadRequest, detail, details...)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /authors", func(w http.ResponseWriter, r *http.Request) {
 		body := &CreateAuthorRequest{}
 		if err := json.NewDecoder(r.Body).Decode(body); err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-
-			json.NewEncoder(w).Encode(HttpErrorResponse{
-				Timestamp: time.Now().UTC(),
-				Message:   http.StatusText(http.StatusBadRequest),
-				Detail:    "Invalid request body",
-			})
+			HttpBadRequest(w, "Invalid request body")
 			return
 		}
 
@@ -53,16 +67,8 @@ func main() {
 			for k, v := range ee {
 				details = append(details, k+": "+v.Error())
 			}
-			resp := HttpErrorResponse{
-				Timestamp: time.Now().UTC(),
-				Message:   http.StatusText(http.StatusBadRequest),
-				Detail:    "One or more invalid fields. Fix it and try again.",
-				Details:   details,
-			}
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(resp)
+			HttpBadRequest(w, "One or more invalid fields. Fix it and try again.", details)
 
 			return
 		}
