@@ -1,26 +1,17 @@
 package main
 
 import (
-	"encoding/json"
-	"net/http"
+	"casadocodigo/author"
+	"casadocodigo/internal/rest"
 	"time"
 
-	"github.com/go-ozzo/ozzo-validation/is"
-	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/gin-gonic/gin"
 )
 
 type CreateAuthorRequest struct {
-	Name        string `json:"name"`
+	Name        string `json:"name" binding:"required"`
 	Email       string `json:"email"`
 	Description string `json:"description"`
-}
-
-func (c *CreateAuthorRequest) Validate() error {
-	return v.ValidateStruct(c,
-		v.Field(&c.Name, v.Required),
-		v.Field(&c.Email, v.Required, is.Email),
-		v.Field(&c.Description, v.Required, v.Length(0, 400)),
-	)
 }
 
 type HttpErrorResponse struct {
@@ -30,49 +21,27 @@ type HttpErrorResponse struct {
 	Details   []string  `json:"details,omitempty"`
 }
 
-func httpError(w http.ResponseWriter, status int, detail string, details ...[]string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+func CreateAuthorHandler(c *gin.Context, svc *author.Service) {
+	req := &CreateAuthorRequest{}
 
-	var dd []string
-	if len(details) > 0 {
-		dd = details[0]
-	}
+	rest.ValidateStruct(c, req)
 
-	json.NewEncoder(w).Encode(HttpErrorResponse{
-		Timestamp: time.Now().UTC(),
-		Message:   http.StatusText(status),
-		Detail:    detail,
-		Details:   dd,
-	})
-}
-
-func HttpBadRequest(w http.ResponseWriter, detail string, details ...[]string) {
-	httpError(w, http.StatusBadRequest, detail, details...)
+	svc.CreateAuthor(req.Name, req.Email, req.Description)
 }
 
 func main() {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("POST /authors", func(w http.ResponseWriter, r *http.Request) {
-		body := &CreateAuthorRequest{}
-		if err := json.NewDecoder(r.Body).Decode(body); err != nil {
-			HttpBadRequest(w, "Invalid request body")
-			return
-		}
-
-		if err := body.Validate(); err != nil {
-			ee := err.(v.Errors)
-			details := make([]string, 0)
-			for k, v := range ee {
-				details = append(details, k+": "+v.Error())
-			}
-
-			HttpBadRequest(w, "One or more invalid fields. Fix it and try again.", details)
-
-			return
-		}
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
 	})
 
-	http.ListenAndServe(":8080", mux)
+	authors := author.NewService()
+
+	r.POST("/authors", func(ctx *gin.Context) {
+		CreateAuthorHandler(ctx, authors)
+	})
+
+	r.Run()
 }
