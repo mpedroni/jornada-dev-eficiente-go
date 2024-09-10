@@ -10,7 +10,7 @@ import (
 
 func ValidateStruct(c *gin.Context, obj interface{}) bool {
 	payload := gin.H{
-		"timestamp": time.Now(),
+		"timestamp": time.Now().UTC(),
 		"message":   "Bad Request",
 		"status":    http.StatusBadRequest,
 	}
