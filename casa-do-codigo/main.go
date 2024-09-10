@@ -1,7 +1,7 @@
 package main
 
 import (
-	"casadocodigo/author"
+	"casadocodigo/internal/author"
 	"casadocodigo/internal/rest"
 	"time"
 
