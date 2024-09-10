@@ -21,12 +21,12 @@ type HttpErrorResponse struct {
 	Details   []string  `json:"details,omitempty"`
 }
 
-func CreateAuthorHandler(c *gin.Context, svc *author.Service) {
+func CreateAuthorHandler(c *gin.Context, svc author.Service) {
 	req := &CreateAuthorRequest{}
 
 	rest.ValidateStruct(c, req)
 
-	svc.CreateAuthor(req.Name, req.Email, req.Description)
+	svc.CreateAuthor(c.Request.Context(), req.Name, req.Email, req.Description)
 }
 
 func main() {

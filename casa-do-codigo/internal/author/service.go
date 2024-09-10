@@ -1,14 +1,22 @@
 package author
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
-type Service struct {
+type Service interface {
+	CreateAuthor(ctx context.Context, name, email, description string) (Author, error)
 }
 
-func NewService() *Service {
-	return &Service{}
+type service struct {
 }
 
-func (s *Service) CreateAuthor(name, email, description string) {
+func NewService() Service {
+	return &service{}
+}
+
+func (s *service) CreateAuthor(ctx context.Context, name, email, description string) (Author, error) {
 	fmt.Println(name, email, description)
+	return Author{}, nil
 }
