@@ -2,6 +2,7 @@ package author
 
 import (
 	"casadocodigo/internal/rest"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -26,17 +27,17 @@ func (h *authorHandler) Create(c *gin.Context) {
 
 	rest.ValidateStruct(c, req)
 
-	a, err := h.authors.Create(c.Request.Context(), req.Name, req.Email, req.Description)
+	_, err := h.authors.Create(c.Request.Context(), req.Name, req.Email, req.Description)
 	if err != nil {
 		if err == ErrEmailAlreadyExists {
-			c.JSON(400, map[string]string{"error": err.Error()})
+			rest.BadRequest(c, fmt.Sprintf("An author with email %s already exists", req.Email))
 			return
 		}
 
 		log.Printf("while creating author: %v\n", err)
-		c.JSON(500, map[string]string{"error": "internal server error"})
+		rest.InternalServerError(c)
 		return
 	}
 
-	log.Printf("author with id %d created successfully\n", a.ID)
+	rest.OK(c)
 }

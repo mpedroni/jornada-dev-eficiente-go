@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,13 +17,6 @@ type CreateAuthorRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Email       string `json:"email"`
 	Description string `json:"description"`
-}
-
-type HttpErrorResponse struct {
-	Timestamp time.Time `json:"timestamp"`
-	Message   string    `json:"message"`
-	Detail    string    `json:"detail,omitempty"`
-	Details   []string  `json:"details,omitempty"`
 }
 
 func CreateAuthorHandler(c *gin.Context, svc author.AuthorService) {
