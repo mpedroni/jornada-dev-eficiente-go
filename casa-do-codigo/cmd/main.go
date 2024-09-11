@@ -3,9 +3,13 @@ package main
 import (
 	"casadocodigo/internal/author"
 	"casadocodigo/internal/rest"
+	"context"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type CreateAuthorRequest struct {
@@ -37,8 +41,18 @@ func main() {
 		})
 	})
 
-	authorService := author.NewAuthorService()
+	pool, err := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/casa_do_codigo")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer pool.Close()
+	if err := pool.Ping(context.Background()); err != nil {
+		fmt.Fprintf(os.Stderr, "unable to ping database: %v\n", err)
+		os.Exit(1)
+	}
 
+	authorService := author.NewAuthorService(pool)
 	authorHandler := author.NewAuthorHandler(authorService)
 
 	r.POST("/authors", authorHandler.Create)
