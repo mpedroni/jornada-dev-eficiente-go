@@ -2,8 +2,10 @@ package main
 
 import (
 	"casadocodigo/internal/author"
+	"casadocodigo/internal/database"
 	"casadocodigo/internal/rest"
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -34,6 +36,14 @@ func CreateAuthorHandler(c *gin.Context, svc author.AuthorService) {
 }
 
 func main() {
+	var migrate bool
+	flag.BoolVar(&migrate, "migrate", false, "run the migrations")
+
+	var rollback bool
+	flag.BoolVar(&rollback, "rollback", false, "run the rollback")
+
+	flag.Parse()
+
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -50,6 +60,14 @@ func main() {
 	if err := pool.Ping(context.Background()); err != nil {
 		fmt.Fprintf(os.Stderr, "unable to ping database: %v\n", err)
 		os.Exit(1)
+	}
+
+	if rollback {
+		database.Rollback(pool)
+	}
+
+	if migrate {
+		database.Migrate(pool)
 	}
 
 	authorService := author.NewAuthorService(pool)
