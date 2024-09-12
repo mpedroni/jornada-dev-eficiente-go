@@ -2,6 +2,7 @@ package main
 
 import (
 	"casadocodigo/internal/author"
+	"casadocodigo/internal/category"
 	"casadocodigo/internal/database"
 	"context"
 	"flag"
@@ -49,7 +50,12 @@ func main() {
 	authorService := author.NewAuthorService(pool)
 	authorHandler := author.NewAuthorHandler(authorService)
 
+	categoryService := category.NewCategoryService(pool)
+	categoryHandler := category.NewCategoryHandler(categoryService)
+
 	r.POST("/authors", authorHandler.Create)
+
+	r.POST("/categories", categoryHandler.Create)
 
 	r.Run()
 }
