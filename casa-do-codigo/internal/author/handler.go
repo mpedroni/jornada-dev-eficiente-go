@@ -25,7 +25,9 @@ func NewAuthorHandler(as AuthorService) AuthorHandler {
 func (h *authorHandler) Create(c *gin.Context) {
 	req := &CreateAuthorRequest{}
 
-	rest.ValidateStruct(c, req)
+	if !rest.ValidateStruct(c, req) {
+		return
+	}
 
 	_, err := h.authors.Create(c.Request.Context(), req.Name, req.Email, req.Description)
 	if err != nil {
