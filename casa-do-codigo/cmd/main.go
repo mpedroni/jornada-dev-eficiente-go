@@ -20,6 +20,8 @@ func main() {
 	flag.Parse()
 
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
