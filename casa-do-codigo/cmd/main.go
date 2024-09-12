@@ -5,8 +5,7 @@ import (
 	"casadocodigo/internal/database"
 	"context"
 	"flag"
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,11 +13,10 @@ import (
 
 func main() {
 	var migrate bool
-	flag.BoolVar(&migrate, "migrate", false, "run the migrations")
-
 	var rollback bool
-	flag.BoolVar(&rollback, "rollback", false, "run the rollback")
 
+	flag.BoolVar(&migrate, "migrate", false, "run the migrations")
+	flag.BoolVar(&rollback, "rollback", false, "run the rollback")
 	flag.Parse()
 
 	r := gin.Default()
@@ -30,13 +28,12 @@ func main() {
 
 	pool, err := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/casa_do_codigo")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unable to connect to database: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("unable to connect to database: %v", err)
 	}
 	defer pool.Close()
+
 	if err := pool.Ping(context.Background()); err != nil {
-		fmt.Fprintf(os.Stderr, "unable to ping database: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("unable to ping database: %v", err)
 	}
 
 	if rollback {
