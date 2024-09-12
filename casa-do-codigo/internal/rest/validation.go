@@ -1,20 +1,13 @@
 package rest
 
 import (
-	"net/http"
-	"time"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
 func ValidateStruct(c *gin.Context, obj interface{}) bool {
-	payload := gin.H{
-		"timestamp": time.Now().UTC(),
-		"message":   "Bad Request",
-		"status":    http.StatusBadRequest,
-	}
-
 	if err := c.ShouldBindJSON(obj); err != nil {
 		if ee, ok := err.(validator.ValidationErrors); ok {
 			var messages []string
@@ -43,16 +36,11 @@ func ValidateStruct(c *gin.Context, obj interface{}) bool {
 				messages = append(messages, message)
 			}
 
-			payload["detail"] = "Invalid request. Verify the fields and try again"
-			payload["details"] = messages
-
-			c.JSON(http.StatusBadRequest, payload)
+			BadRequest(c, "Invalid request. Verify the fields and try again", messages...)
 			return false
 		}
 
-		payload["detail"] = "Unable to parse: " + err.Error()
-
-		c.JSON(http.StatusBadRequest, payload)
+		BadRequest(c, fmt.Sprintf("Unable to parse: %v", err))
 		return false
 	}
 

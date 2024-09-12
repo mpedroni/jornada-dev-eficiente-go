@@ -10,6 +10,7 @@ import (
 type HttpErrorResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 	Message   string    `json:"message"`
+	Status    int       `json:"status"`
 	Detail    string    `json:"detail,omitempty"`
 	Details   []string  `json:"details,omitempty"`
 }
@@ -18,6 +19,7 @@ func httpErrorResponse(c *gin.Context, status int, message, detail string, detai
 	c.JSON(status, HttpErrorResponse{
 		Timestamp: time.Now().UTC(),
 		Message:   message,
+		Status:    status,
 		Detail:    detail,
 		Details:   details,
 	})
