@@ -15,12 +15,24 @@ func Migrate(conn *pgxpool.Pool) {
 		name VARCHAR(255) NOT NULL,
 		email VARCHAR(255) NOT NULL UNIQUE,
 		description TEXT,
-		created_at TIMESTAMP NOT NULL
-	)
-	`
+		created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	)`
 
-	if _, err := conn.Exec(ctx, createAuthorsTableQuery); err != nil {
-		log.Fatalf("failed running migrations: %v", err)
+	createCategoriesTableQuery := `CREATE TABLE IF NOT EXISTS categories (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL UNIQUE,
+		created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	)`
+
+	migrations := []string{
+		createAuthorsTableQuery,
+		createCategoriesTableQuery,
+	}
+
+	for _, m := range migrations {
+		if _, err := conn.Exec(ctx, m); err != nil {
+			log.Fatalf("failed running migrations: %v", err)
+		}
 	}
 
 	log.Println("migrations ran successfully")
@@ -30,9 +42,17 @@ func Rollback(conn *pgxpool.Pool) {
 	ctx := context.Background()
 
 	rollbackAuthorsTableQuery := `DROP TABLE IF EXISTS authors`
+	rollbackCategoriesTableQuery := "DROP TABLE IF EXISTS categories"
 
-	if _, err := conn.Exec(ctx, rollbackAuthorsTableQuery); err != nil {
-		log.Fatalf("failed running rollback: %v", err)
+	rollbacks := []string{
+		rollbackCategoriesTableQuery,
+		rollbackAuthorsTableQuery,
+	}
+
+	for _, r := range rollbacks {
+		if _, err := conn.Exec(ctx, r); err != nil {
+			log.Fatalf("failed running rollback: %v", err)
+		}
 	}
 
 	log.Println("rollback ran successfully")
