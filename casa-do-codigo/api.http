@@ -7,3 +7,11 @@ Content-Type: application/json
   "email": "bruce@wayne.com",
   "description": "Bruce Wayne is the owner of Wayne Enterprises and also Batman at free time"
 }
+
+### Create a category
+POST http://localhost:8080/categories
+Content-Type: application/json
+
+{
+  "name": "superhero"
+}
