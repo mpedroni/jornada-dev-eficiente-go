@@ -1,12 +1,14 @@
 package author
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
 
 type AuthorRepository interface {
-	Save(a *Author) error
+	Save(ctx context.Context, author *Author) error
+	FindByEmail(ctx context.Context, email string) (*Author, error)
 }
 
 type Author struct {
