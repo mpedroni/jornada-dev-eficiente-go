@@ -4,7 +4,6 @@ import (
 	"casadocodigo/internal/author"
 	"casadocodigo/internal/category"
 	"casadocodigo/internal/database"
-	"casadocodigo/internal/infra"
 	"context"
 	"flag"
 	"log"
@@ -48,7 +47,7 @@ func main() {
 		database.Migrate(pool)
 	}
 
-	authorRepository := infra.NewAuthorRepository(pool)
+	authorRepository := author.NewPgxAuthorRepository(pool)
 	authorService := author.NewAuthorService(authorRepository)
 	authorHandler := author.NewAuthorHandler(authorService)
 

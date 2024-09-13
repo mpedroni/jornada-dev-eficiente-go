@@ -1,7 +1,6 @@
-package infra
+package author
 
 import (
-	"casadocodigo/internal/author"
 	"context"
 	"database/sql"
 	"errors"
@@ -14,13 +13,13 @@ type authorRepository struct {
 	conn *pgxpool.Pool
 }
 
-func NewAuthorRepository(pool *pgxpool.Pool) author.AuthorRepository {
+func NewPgxAuthorRepository(pool *pgxpool.Pool) AuthorRepository {
 	return &authorRepository{
 		conn: pool,
 	}
 }
 
-func (r *authorRepository) Save(ctx context.Context, a *author.Author) error {
+func (r *authorRepository) Save(ctx context.Context, a *Author) error {
 	err := r.conn.QueryRow(
 		ctx,
 		"INSERT INTO authors (name, email, description, created_at) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -37,8 +36,8 @@ func (r *authorRepository) Save(ctx context.Context, a *author.Author) error {
 	return nil
 }
 
-func (r *authorRepository) FindByEmail(ctx context.Context, email string) (*author.Author, error) {
-	a := author.Author{}
+func (r *authorRepository) FindByEmail(ctx context.Context, email string) (*Author, error) {
+	a := Author{}
 
 	err := r.conn.QueryRow(
 		ctx,
@@ -47,7 +46,7 @@ func (r *authorRepository) FindByEmail(ctx context.Context, email string) (*auth
 	).Scan(&a.ID, &a.Name, &a.Email, &a.Description, &a.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, author.ErrAuthorNotFound
+			return nil, ErrAuthorNotFound
 		}
 		return nil, err
 	}
