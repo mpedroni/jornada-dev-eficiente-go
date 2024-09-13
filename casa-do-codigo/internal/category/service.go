@@ -2,10 +2,7 @@ package category
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -15,21 +12,20 @@ var (
 
 type CategoryService interface {
 	Create(ctx context.Context, name string) (*Category, error)
-	FindByName(ctx context.Context, name string) (*Category, error)
 }
 
 type categoryService struct {
-	pool *pgxpool.Pool
+	repo CategoryRepository
 }
 
-func NewCategoryService(p *pgxpool.Pool) CategoryService {
+func NewCategoryService(repo CategoryRepository) CategoryService {
 	return &categoryService{
-		pool: p,
+		repo: repo,
 	}
 }
 
 func (s *categoryService) Create(ctx context.Context, name string) (*Category, error) {
-	existing, err := s.FindByName(ctx, name)
+	existing, err := s.repo.FindByName(ctx, name)
 	if err != nil && !errors.Is(err, ErrCategoryNotFound) {
 		return nil, err
 	}
@@ -43,31 +39,8 @@ func (s *categoryService) Create(ctx context.Context, name string) (*Category, e
 		return nil, err
 	}
 
-	err = s.pool.QueryRow(
-		ctx,
-		"INSERT INTO categories (name, created_at) VALUES ($1, $2) RETURNING ID",
-		c.Name, c.CreatedAt,
-	).Scan(&c.ID)
+	err = s.repo.Save(ctx, c)
 	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-}
-
-func (s *categoryService) FindByName(ctx context.Context, name string) (*Category, error) {
-	c := &Category{}
-
-	err := s.pool.QueryRow(
-		ctx,
-		"SELECT id, name, created_at FROM categories WHERE name = $1",
-		name,
-	).Scan(&c.ID, &c.Name, &c.CreatedAt)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrCategoryNotFound
-		}
-
 		return nil, err
 	}
 

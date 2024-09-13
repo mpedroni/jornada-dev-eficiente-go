@@ -1,6 +1,14 @@
 package category
 
-import "time"
+import (
+	"context"
+	"time"
+)
+
+type CategoryRepository interface {
+	Save(ctx context.Context, c *Category) error
+	FindByName(ctx context.Context, name string) (*Category, error)
+}
 
 type Category struct {
 	ID        int

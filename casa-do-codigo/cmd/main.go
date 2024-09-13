@@ -51,7 +51,8 @@ func main() {
 	authorService := author.NewAuthorService(authorRepository)
 	authorHandler := author.NewAuthorHandler(authorService)
 
-	categoryService := category.NewCategoryService(pool)
+	categoryRepository := category.NewPgxCategoryRepository(pool)
+	categoryService := category.NewCategoryService(categoryRepository)
 	categoryHandler := category.NewCategoryHandler(categoryService)
 
 	r.POST("/authors", authorHandler.Create)
