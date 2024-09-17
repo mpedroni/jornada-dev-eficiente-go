@@ -1,6 +1,7 @@
 package book
 
 import (
+	"casadocodigo/internal/rest"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -17,5 +18,11 @@ func NewBookHandler() BookHandler {
 }
 
 func (h *bookHandler) Create(c *gin.Context) {
-	fmt.Println("create book handler")
+	req := &CreateBookRequest{}
+
+	if !rest.ValidateStruct(c, req) {
+		return
+	}
+
+	fmt.Println("create book handler", req)
 }
