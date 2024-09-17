@@ -2,6 +2,7 @@ package main
 
 import (
 	"casadocodigo/internal/author"
+	"casadocodigo/internal/book"
 	"casadocodigo/internal/category"
 	"casadocodigo/internal/database"
 	"context"
@@ -55,9 +56,11 @@ func main() {
 	categoryService := category.NewCategoryService(categoryRepository)
 	categoryHandler := category.NewCategoryHandler(categoryService)
 
-	r.POST("/authors", authorHandler.Create)
+	bookHandler := book.NewBookHandler()
 
+	r.POST("/authors", authorHandler.Create)
 	r.POST("/categories", categoryHandler.Create)
+	r.POST("/books", bookHandler.Create)
 
 	r.Run()
 }
