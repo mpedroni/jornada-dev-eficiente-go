@@ -3,6 +3,7 @@ module casadocodigo
 go 1.22.3
 
 require (
+	cloud.google.com/go v0.115.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
