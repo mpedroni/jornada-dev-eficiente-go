@@ -3,9 +3,9 @@ POST http://localhost:8080/authors
 Content-Type: application/json
 
 {
-  "name": "Bruce Wayne",
-  "email": "bruce@wayne.com",
-  "description": "Bruce Wayne is the owner of Wayne Enterprises and also Batman at free time"
+  "name": "J.R.R. Tolkien",
+  "email": "jrr@tolkien.me",
+  "description": "John Ronald Reuel Tolkien was an English writer, poet, philologist, and academic, who is best known as the author of the classic high fantasy works The Hobbit, The Lord of the Rings, and The Silmarillion."
 }
 
 ### Create a category
@@ -13,5 +13,21 @@ POST http://localhost:8080/categories
 Content-Type: application/json
 
 {
-  "name": "superhero"
+  "name": "fantasy"
+}
+
+### Create a book 
+POST http://localhost:8080/books
+Content-Type: application/json
+
+{
+  "title": "The Hoobit",
+  "abstract": "The Hobbit is a fantasy novel by J.R.R. Tolkien",
+  "table_of_content": "1. An Unexpected Party, 2. Roast Mutton, 3. A Short Rest",
+  "price": 39.90,
+  "number_of_pages": 300,
+  "isbn": "978-3-16-148410-0",
+  "publish_date": "1937-09-21",
+  "category": "fantasy",
+  "author_id": 1
 }
