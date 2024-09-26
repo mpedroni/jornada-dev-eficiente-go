@@ -33,11 +33,12 @@ func Migrate(conn *pgxpool.Pool) {
 		number_of_pages INT NOT NULL,
 		isbn VARCHAR(255) NOT NULL,
 		publish_date DATE NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		category_id INT NOT NULL,
 		author_id INT NOT NULL,
 
-		FOREIGN KEY (category_id) REFERENCES categories (id),
-		FOREIGN KEY (author_id) REFERENCES authors (id)
+		FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL,
+		FOREIGN KEY (author_id) REFERENCES authors (id) ON DELETE CASCADE
 	)`
 
 	migrations := []string{
@@ -58,8 +59,8 @@ func Migrate(conn *pgxpool.Pool) {
 func Rollback(conn *pgxpool.Pool) {
 	ctx := context.Background()
 
-	rollbackAuthorsTableQuery := `DROP TABLE IF EXISTS authors`
-	rollbackCategoriesTableQuery := "DROP TABLE IF EXISTS categories"
+	rollbackAuthorsTableQuery := `DROP TABLE IF EXISTS authors CASCADE`
+	rollbackCategoriesTableQuery := "DROP TABLE IF EXISTS categories CASCADE"
 	rollbackBooksTableQuery := "DROP TABLE IF EXISTS books"
 
 	rollbacks := []string{
