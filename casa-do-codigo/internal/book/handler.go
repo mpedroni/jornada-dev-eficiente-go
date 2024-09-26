@@ -3,6 +3,7 @@ package book
 import (
 	"casadocodigo/internal/category"
 	"casadocodigo/internal/rest"
+	"errors"
 	"fmt"
 
 	"cloud.google.com/go/civil"
@@ -31,7 +32,9 @@ func (h *bookHandler) Create(c *gin.Context) {
 	}
 
 	publishDate, _ := civil.ParseDate(req.PublishDate)
-	category := category.Category{}
+	category := category.Category{
+		ID: 1,
+	}
 
 	if _, err := h.books.Create(
 		c.Request.Context(),
@@ -45,7 +48,18 @@ func (h *bookHandler) Create(c *gin.Context) {
 		category,
 		req.AuthorID,
 	); err != nil {
-		fmt.Println(err)
+		var ve *ValidationError
+		if errors.As(err, &ve) {
+			rest.BadRequest(c, err.Error())
+			return
+		}
+
+		if err == ErrBookAlreadyExists {
+			rest.BadRequest(c, fmt.Sprintf("book with title %s already exists", req.Title))
+			return
+		}
+
+		rest.InternalServerError(c)
 		return
 	}
 }

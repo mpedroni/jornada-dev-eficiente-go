@@ -11,6 +11,7 @@ import (
 
 type BookRepository interface {
 	Save(ctx context.Context, book *Book) error
+	FindByTitle(ctx context.Context, title string) (*Book, error)
 }
 
 type ValidationError struct {
@@ -18,12 +19,14 @@ type ValidationError struct {
 }
 
 func (ve ValidationError) Error() string {
-	result := ""
-	for _, err := range ve.errors {
-		result += err.Error() + "\n"
+	var errs string
+	for i, err := range ve.errors {
+		errs += err.Error()
+		if i < len(ve.errors)-1 {
+			errs += "; "
+		}
 	}
-
-	return result
+	return errs
 }
 
 func (ve *ValidationError) Add(err error) {
@@ -53,6 +56,7 @@ func NewBook(
 	abstract,
 	tableOfContents string,
 	price float32,
+	numberOfPages int,
 	isbn string,
 	publishDate civil.Date,
 	category category.Category,
@@ -65,6 +69,7 @@ func NewBook(
 		Abstract:       abstract,
 		TableOfContent: tableOfContents,
 		Price:          price,
+		NumberOfPages:  numberOfPages,
 		ISBN:           isbn,
 		PublishDate:    publishDate,
 		Category:       category,
@@ -123,7 +128,7 @@ func (b *Book) Validate() error {
 	}
 
 	if len(ve.errors) > 0 {
-		return ve
+		return &ve
 	}
 
 	return nil

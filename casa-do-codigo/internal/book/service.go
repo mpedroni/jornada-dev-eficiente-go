@@ -3,8 +3,14 @@ package book
 import (
 	"casadocodigo/internal/category"
 	"context"
+	"errors"
 
 	"cloud.google.com/go/civil"
+)
+
+var (
+	ErrBookNotFound      = errors.New("book not found")
+	ErrBookAlreadyExists = errors.New("book already exists")
 )
 
 type BookService interface {
@@ -36,7 +42,7 @@ func (s *bookService) Create(
 	ctx context.Context,
 	title,
 	abstract,
-	tableOfContents string,
+	tableOfContent string,
 	price float32,
 	numberOfPages int,
 	isbn string,
@@ -44,11 +50,21 @@ func (s *bookService) Create(
 	category category.Category,
 	authorID int,
 ) (*Book, error) {
+	existing, err := s.books.FindByTitle(ctx, title)
+	if err != nil && !errors.Is(err, ErrBookNotFound) {
+		return nil, err
+	}
+
+	if existing != nil {
+		return nil, ErrBookAlreadyExists
+	}
+
 	b, err := NewBook(
 		title,
 		abstract,
-		tableOfContents,
+		tableOfContent,
 		price,
+		numberOfPages,
 		isbn,
 		publishDate,
 		category,
