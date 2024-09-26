@@ -24,9 +24,26 @@ func Migrate(conn *pgxpool.Pool) {
 		created_at TIMESTAMP NOT NULL DEFAULT NOW()
 	)`
 
+	createBooksTableQuery := `CREATE TABLE IF NOT EXISTS books (
+		id SERIAL PRIMARY KEY,
+		title VARCHAR(255) NOT NULL,
+		abstract TEXT NOT NULL,
+		table_of_content TEXT NOT NULL,
+		price FLOAT NOT NULL,
+		number_of_pages INT NOT NULL,
+		isbn VARCHAR(255) NOT NULL,
+		publish_date DATE NOT NULL,
+		category_id INT NOT NULL,
+		author_id INT NOT NULL,
+
+		FOREIGN KEY (category_id) REFERENCES categories (id),
+		FOREIGN KEY (author_id) REFERENCES authors (id)
+	)`
+
 	migrations := []string{
 		createAuthorsTableQuery,
 		createCategoriesTableQuery,
+		createBooksTableQuery,
 	}
 
 	for _, m := range migrations {
@@ -43,10 +60,12 @@ func Rollback(conn *pgxpool.Pool) {
 
 	rollbackAuthorsTableQuery := `DROP TABLE IF EXISTS authors`
 	rollbackCategoriesTableQuery := "DROP TABLE IF EXISTS categories"
+	rollbackBooksTableQuery := "DROP TABLE IF EXISTS books"
 
 	rollbacks := []string{
 		rollbackCategoriesTableQuery,
 		rollbackAuthorsTableQuery,
+		rollbackBooksTableQuery,
 	}
 
 	for _, r := range rollbacks {
