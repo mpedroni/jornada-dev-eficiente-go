@@ -2,11 +2,16 @@ package book
 
 import (
 	"casadocodigo/internal/category"
+	"context"
 	"errors"
 	"time"
 
 	"cloud.google.com/go/civil"
 )
+
+type BookRepository interface {
+	Save(ctx context.Context, book *Book) error
+}
 
 type ValidationError struct {
 	errors []error
