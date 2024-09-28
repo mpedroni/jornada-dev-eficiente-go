@@ -31,3 +31,6 @@ Content-Type: application/json
   "category": "fantasy",
   "author_id": 1
 }
+
+### List all books
+GET http://localhost:8080/books
