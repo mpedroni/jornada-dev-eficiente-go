@@ -81,19 +81,10 @@ func (h *bookHandler) List(c *gin.Context) {
 	body := make([]BookDTO, 0, len(books))
 	for _, b := range books {
 		body = append(body, BookDTO{
-			ID:             b.ID,
-			Title:          b.Title,
-			Abstract:       b.Abstract,
-			TableOfContent: b.TableOfContent,
-			Price:          b.Price,
-			NumberOfPages:  b.NumberOfPages,
-			ISBN:           b.ISBN,
-			PublishDate:    b.PublishDate.String(),
-			Category:       b.Category.Name,
-			AuthorID:       b.AuthorID,
+			ID:    b.ID,
+			Title: b.Title,
 		})
 	}
 
 	rest.OK(c, gin.H{"books": body})
-	return
 }
