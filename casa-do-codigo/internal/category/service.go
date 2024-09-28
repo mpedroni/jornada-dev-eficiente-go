@@ -12,6 +12,7 @@ var (
 
 type CategoryService interface {
 	Create(ctx context.Context, name string) (*Category, error)
+	FindByName(ctx context.Context, name string) (*Category, error)
 }
 
 type categoryService struct {
@@ -45,4 +46,13 @@ func (s *categoryService) Create(ctx context.Context, name string) (*Category, e
 	}
 
 	return c, nil
+}
+
+func (s *categoryService) FindByName(ctx context.Context, name string) (*Category, error) {
+	category, err := s.repo.FindByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return category, nil
 }

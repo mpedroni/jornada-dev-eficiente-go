@@ -58,7 +58,7 @@ func main() {
 
 	bookRepository := book.NewPgxBookRepository(pool)
 	bookService := book.NewBookService(bookRepository)
-	bookHandler := book.NewBookHandler(bookService)
+	bookHandler := book.NewBookHandler(bookService, categoryService)
 
 	r.POST("/authors", authorHandler.Create)
 	r.POST("/categories", categoryHandler.Create)

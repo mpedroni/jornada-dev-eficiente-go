@@ -15,12 +15,14 @@ type BookHandler interface {
 }
 
 type bookHandler struct {
-	books BookService
+	books      BookService
+	categories category.CategoryService
 }
 
-func NewBookHandler(bs BookService) BookHandler {
+func NewBookHandler(bs BookService, cs category.CategoryService) BookHandler {
 	return &bookHandler{
-		books: bs,
+		books:      bs,
+		categories: cs,
 	}
 }
 
@@ -31,9 +33,13 @@ func (h *bookHandler) Create(c *gin.Context) {
 		return
 	}
 
+	ctx := c.Request.Context()
+
 	publishDate, _ := civil.ParseDate(req.PublishDate)
-	category := category.Category{
-		ID: 1,
+	category, err := h.categories.FindByName(ctx, req.Category)
+	if err != nil {
+		rest.BadRequest(c, fmt.Sprintf("category with name %s not found", req.Category))
+		return
 	}
 
 	if _, err := h.books.Create(
@@ -45,7 +51,7 @@ func (h *bookHandler) Create(c *gin.Context) {
 		req.NumberOfPages,
 		req.ISBN,
 		publishDate,
-		category,
+		*category,
 		req.AuthorID,
 	); err != nil {
 		var ve *ValidationError
