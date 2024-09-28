@@ -21,13 +21,13 @@ POST http://localhost:8080/books
 Content-Type: application/json
 
 {
-  "title": "The Hoobit",
+  "title": "The Hobbit",
   "abstract": "The Hobbit is a fantasy novel by J.R.R. Tolkien",
   "table_of_content": "1. An Unexpected Party, 2. Roast Mutton, 3. A Short Rest",
   "price": 39.90,
   "number_of_pages": 300,
   "isbn": "978-3-16-148410-0",
-  "publish_date": "1937-09-21",
+  "publish_date": "2024-12-31",
   "category": "fantasy",
   "author_id": 1
 }
