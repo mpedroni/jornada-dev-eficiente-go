@@ -12,6 +12,7 @@ import (
 
 type BookHandler interface {
 	Create(c *gin.Context)
+	List(c *gin.Context)
 }
 
 type bookHandler struct {
@@ -68,4 +69,31 @@ func (h *bookHandler) Create(c *gin.Context) {
 		rest.InternalServerError(c)
 		return
 	}
+}
+
+func (h *bookHandler) List(c *gin.Context) {
+	books, err := h.books.List(c.Request.Context())
+	if err != nil {
+		rest.InternalServerError(c)
+		return
+	}
+
+	body := make([]BookDTO, 0, len(books))
+	for _, b := range books {
+		body = append(body, BookDTO{
+			ID:             b.ID,
+			Title:          b.Title,
+			Abstract:       b.Abstract,
+			TableOfContent: b.TableOfContent,
+			Price:          b.Price,
+			NumberOfPages:  b.NumberOfPages,
+			ISBN:           b.ISBN,
+			PublishDate:    b.PublishDate.String(),
+			Category:       b.Category.Name,
+			AuthorID:       b.AuthorID,
+		})
+	}
+
+	rest.OK(c, gin.H{"books": body})
+	return
 }

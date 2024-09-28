@@ -26,6 +26,8 @@ type BookService interface {
 		category category.Category,
 		authorID int,
 	) (*Book, error)
+
+	List(ctx context.Context) ([]Book, error)
 }
 
 type bookService struct {
@@ -79,4 +81,13 @@ func (s *bookService) Create(
 	}
 
 	return b, nil
+}
+
+func (s *bookService) List(ctx context.Context) ([]Book, error) {
+	books, err := s.books.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }

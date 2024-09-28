@@ -62,7 +62,9 @@ func main() {
 
 	r.POST("/authors", authorHandler.Create)
 	r.POST("/categories", categoryHandler.Create)
+
 	r.POST("/books", bookHandler.Create)
+	r.GET("/books", bookHandler.List)
 
 	r.Run()
 }

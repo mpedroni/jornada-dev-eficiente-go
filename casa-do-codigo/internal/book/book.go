@@ -12,6 +12,7 @@ import (
 type BookRepository interface {
 	Save(ctx context.Context, book *Book) error
 	FindByTitle(ctx context.Context, title string) (*Book, error)
+	List(ctx context.Context) ([]Book, error)
 }
 
 type ValidationError struct {

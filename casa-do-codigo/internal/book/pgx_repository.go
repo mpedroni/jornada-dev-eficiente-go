@@ -93,3 +93,53 @@ func (r *bookRepository) FindByTitle(ctx context.Context, title string) (*Book, 
 
 	return &b, nil
 }
+
+func (r *bookRepository) List(ctx context.Context) ([]Book, error) {
+	rows, err := r.conn.Query(
+		ctx,
+		`
+		SELECT 
+			b.id, 
+			b.title,
+			b.abstract,
+			b.table_of_content,
+			b.price,
+			b.number_of_pages,
+			b.isbn,
+			b.publish_date,
+			b.author_id,
+
+			c.id,
+			c.name,
+			c.created_at
+	 	FROM books b
+		JOIN categories c ON b.category_id = c.id
+		ORDER BY b.created_at DESC
+		`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []Book
+	for rows.Next() {
+		var b Book
+		var c category.Category
+
+		var publishDate time.Time
+		if err := rows.Scan(
+			&b.ID, &b.Title, &b.Abstract, &b.TableOfContent, &b.Price, &b.NumberOfPages, &b.ISBN, &publishDate, &b.AuthorID,
+			&c.ID, &c.Name, &c.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		b.PublishDate = civil.DateOf(publishDate)
+		b.Category = c
+
+		books = append(books, b)
+	}
+
+	return books, nil
+}
