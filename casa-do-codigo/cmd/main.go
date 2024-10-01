@@ -4,9 +4,7 @@ import (
 	"casadocodigo/internal/author"
 	"casadocodigo/internal/book"
 	"casadocodigo/internal/category"
-	"casadocodigo/internal/database"
 	"context"
-	"flag"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -14,13 +12,6 @@ import (
 )
 
 func main() {
-	var migrate bool
-	var rollback bool
-
-	flag.BoolVar(&migrate, "migrate", false, "run the migrations")
-	flag.BoolVar(&rollback, "rollback", false, "run the rollback")
-	flag.Parse()
-
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 
@@ -38,14 +29,6 @@ func main() {
 
 	if err := pool.Ping(context.Background()); err != nil {
 		log.Fatalf("unable to ping database: %v", err)
-	}
-
-	if rollback {
-		database.Rollback(pool)
-	}
-
-	if migrate {
-		database.Migrate(pool)
 	}
 
 	authorRepository := author.NewPgxAuthorRepository(pool)
