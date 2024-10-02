@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - name: "casa-do-codigo"
+    schema: "db/migrations"
+    engine: "postgresql"
+    queries:
+      - "internal/author/db/query.sql"
+    gen:
+      go:
+        package: "casadocodigosqlc"
+        out: "casadocodigosqlc"
+        sql_package: "pgx/v5"
+        emit_pointers_for_null_types: true
