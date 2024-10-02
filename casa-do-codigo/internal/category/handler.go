@@ -4,6 +4,7 @@ import (
 	"casadocodigo/internal/rest"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +32,8 @@ func (h *categoryHandler) Create(c *gin.Context) {
 
 	_, err := h.categories.Create(c.Request.Context(), req.Name)
 	if err != nil {
+		log.Default().Printf("error creating category: %v", err)
+
 		if errors.Is(err, ErrCategoryAlreadyExists) {
 			rest.BadRequest(c, fmt.Sprintf("A category with name %s already exists", req.Name))
 			return
