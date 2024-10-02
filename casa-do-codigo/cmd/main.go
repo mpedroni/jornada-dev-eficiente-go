@@ -1,6 +1,7 @@
 package main
 
 import (
+	sqlc "casadocodigo/casadocodigosqlc"
 	"casadocodigo/internal/author"
 	"casadocodigo/internal/book"
 	"casadocodigo/internal/category"
@@ -12,6 +13,7 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 
@@ -21,7 +23,7 @@ func main() {
 		})
 	})
 
-	pool, err := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/casa_do_codigo")
+	pool, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5432/casa_do_codigo")
 	if err != nil {
 		log.Fatalf("unable to connect to database: %v", err)
 	}
@@ -31,7 +33,9 @@ func main() {
 		log.Fatalf("unable to ping database: %v", err)
 	}
 
-	authorRepository := author.NewPgxAuthorRepository(pool)
+	queries := sqlc.New(pool)
+
+	authorRepository := author.NewSqlcAuthorRepository(queries)
 	authorService := author.NewAuthorService(authorRepository)
 	authorHandler := author.NewAuthorHandler(authorService)
 
