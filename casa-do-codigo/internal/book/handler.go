@@ -5,6 +5,7 @@ import (
 	"casadocodigo/internal/rest"
 	"errors"
 	"fmt"
+	"log"
 
 	"cloud.google.com/go/civil"
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,8 @@ func (h *bookHandler) Create(c *gin.Context) {
 		req.AuthorID,
 	); err != nil {
 		var ve *ValidationError
+		log.Default().Printf("error creating book: %v", err)
+
 		if errors.As(err, &ve) {
 			rest.BadRequest(c, err.Error())
 			return

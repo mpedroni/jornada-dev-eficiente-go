@@ -34,6 +34,52 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (int
 	return id, err
 }
 
+const createBook = `-- name: CreateBook :one
+INSERT INTO books 
+(
+  title,
+  abstract,
+  table_of_content,
+  price,
+  number_of_pages,
+  isbn,
+  publish_date,
+  category_id,
+  author_id
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id
+`
+
+type CreateBookParams struct {
+	Title          string
+	Abstract       string
+	TableOfContent string
+	Price          float64
+	NumberOfPages  int32
+	Isbn           string
+	PublishDate    pgtype.Date
+	CategoryID     *int32
+	AuthorID       int32
+}
+
+func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createBook,
+		arg.Title,
+		arg.Abstract,
+		arg.TableOfContent,
+		arg.Price,
+		arg.NumberOfPages,
+		arg.Isbn,
+		arg.PublishDate,
+		arg.CategoryID,
+		arg.AuthorID,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const findAuthorByEmail = `-- name: FindAuthorByEmail :one
 SELECT id, name, email, description, created_at FROM authors WHERE email = $1
 `
@@ -49,4 +95,115 @@ func (q *Queries) FindAuthorByEmail(ctx context.Context, email string) (Author, 
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const findBookByTitle = `-- name: FindBookByTitle :one
+SELECT 
+  b.id, b.title, b.abstract, b.table_of_content, b.price, b.number_of_pages, b.isbn, b.publish_date, b.created_at, b.category_id, b.author_id,
+  c.id, c.name, c.created_at
+FROM 
+  books b
+JOIN 
+  categories c ON b.category_id = c.id
+WHERE 
+  title = $1
+`
+
+type FindBookByTitleRow struct {
+	ID             int32
+	Title          string
+	Abstract       string
+	TableOfContent string
+	Price          float64
+	NumberOfPages  int32
+	Isbn           string
+	PublishDate    pgtype.Date
+	CreatedAt      pgtype.Timestamp
+	CategoryID     *int32
+	AuthorID       int32
+	Category       Category
+}
+
+func (q *Queries) FindBookByTitle(ctx context.Context, title string) (FindBookByTitleRow, error) {
+	row := q.db.QueryRow(ctx, findBookByTitle, title)
+	var i FindBookByTitleRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Abstract,
+		&i.TableOfContent,
+		&i.Price,
+		&i.NumberOfPages,
+		&i.Isbn,
+		&i.PublishDate,
+		&i.CreatedAt,
+		&i.CategoryID,
+		&i.AuthorID,
+		&i.Category.ID,
+		&i.Category.Name,
+		&i.Category.CreatedAt,
+	)
+	return i, err
+}
+
+const listBooks = `-- name: ListBooks :many
+SELECT 
+  b.id, b.title, b.abstract, b.table_of_content, b.price, b.number_of_pages, b.isbn, b.publish_date, b.created_at, b.category_id, b.author_id,
+  c.id, c.name, c.created_at
+FROM 
+  books b
+JOIN 
+  categories c ON b.category_id = c.id
+ORDER BY 
+  b.created_at DESC
+`
+
+type ListBooksRow struct {
+	ID             int32
+	Title          string
+	Abstract       string
+	TableOfContent string
+	Price          float64
+	NumberOfPages  int32
+	Isbn           string
+	PublishDate    pgtype.Date
+	CreatedAt      pgtype.Timestamp
+	CategoryID     *int32
+	AuthorID       int32
+	Category       Category
+}
+
+func (q *Queries) ListBooks(ctx context.Context) ([]ListBooksRow, error) {
+	rows, err := q.db.Query(ctx, listBooks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListBooksRow
+	for rows.Next() {
+		var i ListBooksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Abstract,
+			&i.TableOfContent,
+			&i.Price,
+			&i.NumberOfPages,
+			&i.Isbn,
+			&i.PublishDate,
+			&i.CreatedAt,
+			&i.CategoryID,
+			&i.AuthorID,
+			&i.Category.ID,
+			&i.Category.Name,
+			&i.Category.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -5,6 +5,7 @@ sql:
     engine: "postgresql"
     queries:
       - "internal/author/db/query.sql"
+      - "internal/book/db/query.sql"
     gen:
       go:
         package: "casadocodigosqlc"
