@@ -80,6 +80,22 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (int32, 
 	return id, err
 }
 
+const createCategory = `-- name: CreateCategory :one
+INSERT INTO categories (name, created_at) VALUES ($1, $2) RETURNING id
+`
+
+type CreateCategoryParams struct {
+	Name      string
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createCategory, arg.Name, arg.CreatedAt)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const findAuthorByEmail = `-- name: FindAuthorByEmail :one
 SELECT id, name, email, description, created_at FROM authors WHERE email = $1
 `
@@ -143,6 +159,17 @@ func (q *Queries) FindBookByTitle(ctx context.Context, title string) (FindBookBy
 		&i.Category.Name,
 		&i.Category.CreatedAt,
 	)
+	return i, err
+}
+
+const findCategoryByName = `-- name: FindCategoryByName :one
+SELECT id, name, created_at FROM categories WHERE name = $1
+`
+
+func (q *Queries) FindCategoryByName(ctx context.Context, name string) (Category, error) {
+	row := q.db.QueryRow(ctx, findCategoryByName, name)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
 	return i, err
 }
 

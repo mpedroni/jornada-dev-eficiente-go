@@ -6,6 +6,7 @@ sql:
     queries:
       - "internal/author/db/query.sql"
       - "internal/book/db/query.sql"
+      - "internal/category/db/query.sql"
     gen:
       go:
         package: "casadocodigosqlc"

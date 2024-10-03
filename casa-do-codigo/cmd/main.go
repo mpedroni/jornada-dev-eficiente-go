@@ -39,7 +39,7 @@ func main() {
 	authorService := author.NewAuthorService(authorRepository)
 	authorHandler := author.NewAuthorHandler(authorService)
 
-	categoryRepository := category.NewPgxCategoryRepository(pool)
+	categoryRepository := category.NewSqlcCategoryRepository(queries)
 	categoryService := category.NewCategoryService(categoryRepository)
 	categoryHandler := category.NewCategoryHandler(categoryService)
 
