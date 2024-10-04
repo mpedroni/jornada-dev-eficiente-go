@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - name: "desafio-meli"
+    schema: "db/migrations"
+    engine: "postgresql"
+    queries:
+      - "db/query.sql"
+    gen:
+      go:
+        package: "melisqlc"
+        out: "db/melisqlc"
+        sql_package: "database/sql"
+        emit_pointers_for_null_types: true
