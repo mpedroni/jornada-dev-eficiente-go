@@ -1,0 +1,11 @@
+### Health Check
+GET http://localhost:3000/
+
+### Create a new user
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "login": "jrr@tolkien.me",
+  "password": "theonering"
+}
