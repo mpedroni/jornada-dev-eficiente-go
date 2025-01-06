@@ -40,15 +40,18 @@ func (h *handler) CreateAuthor(ctx *gin.Context) {
 		return
 	}
 
-	if author, err := h.repo.GetByEmail(ctx, req.Email); err != nil && !errors.Is(err, domain.ErrAuthorNotFound) {
+	author, err := h.repo.GetByEmail(ctx, req.Email)
+	if err != nil && !errors.Is(err, domain.ErrAuthorNotFound) {
 		rest.InternalServerError(ctx)
 		return
-	} else if author != nil {
+	}
+
+	if author != nil {
 		rest.Conflict(ctx, errors.New("Already exists an author with the given email"))
 		return
 	}
 
-	author := domain.NewAuthor(req.Name, req.Email, req.Description)
+	author = domain.NewAuthor(req.Name, req.Email, req.Description)
 
 	if err := h.repo.Create(ctx, author); err != nil {
 		rest.InternalServerError(ctx)
