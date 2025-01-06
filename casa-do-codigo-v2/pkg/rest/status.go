@@ -11,8 +11,8 @@ func BadRequest(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "timestamp": time.Now().UTC(), "message": "Bad request"})
 }
 
-func BadRequestWithDetail(ctx *gin.Context, err error, details any) {
-	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "timestamp": time.Now().UTC(), "message": "Bad request", "detail": details})
+func BadRequestWithDetail(ctx *gin.Context, err error, detail any) {
+	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "timestamp": time.Now().UTC(), "message": "Bad request", "detail": detail})
 }
 
 func InternalServerError(ctx *gin.Context) {

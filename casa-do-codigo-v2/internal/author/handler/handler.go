@@ -4,8 +4,6 @@ import (
 	"cdc-v2/internal/author/domain"
 	"cdc-v2/pkg/rest"
 	"errors"
-	"fmt"
-	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -37,33 +35,8 @@ func (h *handler) CreateAuthor(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.validator.Struct(req); err != nil {
-		var ee map[string][]string = make(map[string][]string)
-		for _, err := range err.(validator.ValidationErrors) {
-			fld := reflect.ValueOf(req).Type()
-			a, _ := fld.FieldByName(err.Field())
-
-			var message string
-			message = a.Tag.Get(err.Tag())
-			if message == "" {
-				switch err.Tag() {
-				case "required":
-					message = fmt.Sprintf("%s is required", a.Tag.Get("json"))
-				case "email":
-					message = fmt.Sprintf("%s must be a valid email address", a.Tag.Get("json"))
-				default:
-					message = fmt.Sprintf("%s should be %s", a.Tag.Get("json"), err.Tag())
-					if err.Param() != "" {
-						message += fmt.Sprintf("=%s", err.Param())
-					}
-
-				}
-			}
-
-			ee[a.Tag.Get("json")] = append(ee[err.Field()], message)
-		}
-
-		rest.BadRequestWithDetail(ctx, errors.New("One or more fields are invalid"), ee)
+	if detail := rest.ValidateJSON(req); detail != nil {
+		rest.BadRequestWithDetail(ctx, errors.New("One or more fields are invalid or missing"), detail)
 		return
 	}
 
