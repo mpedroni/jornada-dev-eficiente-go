@@ -8,12 +8,11 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func main() {
-	r := gin.Default()
 	ctx := context.Background()
 	db, err := pgx.Connect(ctx, "postgres://postgres:postgres@localhost:5432/cdc")
 	if err != nil {
@@ -24,10 +23,16 @@ func main() {
 		panic(fmt.Errorf("migrating database: %w", err))
 	}
 
-	validator := validator.New()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(fmt.Errorf("creating logger: %w", err))
+	}
 
 	authorRepository := database.New(db)
-	authorHandler := handler.New(validator, authorRepository)
+	authorHandler := handler.New(authorRepository, logger)
+
+	r := gin.Default()
+
 	authorHandler.RegisterRoutes(r)
 
 	r.Run(":8080")

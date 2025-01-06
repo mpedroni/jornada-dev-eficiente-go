@@ -6,21 +6,21 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 type handler struct {
-	validator *validator.Validate
-	repo      domain.AuthorRepository
+	repo   domain.AuthorRepository
+	logger *zap.Logger
 }
 
 func New(
-	validator *validator.Validate,
 	repository domain.AuthorRepository,
+	logger *zap.Logger,
 ) *handler {
 	return &handler{
-		validator: validator,
-		repo:      repository,
+		repo:   repository,
+		logger: logger,
 	}
 }
 
@@ -42,6 +42,7 @@ func (h *handler) CreateAuthor(ctx *gin.Context) {
 
 	author, err := h.repo.GetByEmail(ctx, req.Email)
 	if err != nil && !errors.Is(err, domain.ErrAuthorNotFound) {
+		h.logger.Error(err.Error())
 		rest.InternalServerError(ctx)
 		return
 	}
@@ -54,6 +55,7 @@ func (h *handler) CreateAuthor(ctx *gin.Context) {
 	author = domain.NewAuthor(req.Name, req.Email, req.Description)
 
 	if err := h.repo.Create(ctx, author); err != nil {
+		h.logger.Error(err.Error())
 		rest.InternalServerError(ctx)
 		return
 	}
