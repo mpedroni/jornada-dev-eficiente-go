@@ -2,11 +2,10 @@ package handler
 
 import (
 	"cdc-v2/internal/author/domain"
+	"cdc-v2/pkg/rest"
 	"errors"
 	"fmt"
-	"net/http"
 	"reflect"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -34,13 +33,12 @@ func (h *handler) RegisterRoutes(r *gin.Engine) {
 func (h *handler) CreateAuthor(ctx *gin.Context) {
 	var req CreateAuthorRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "timestamp": time.Now().Unix(), "message": "Bad request"})
+		rest.BadRequest(ctx, err)
 		return
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-
-		var errors map[string][]string = make(map[string][]string)
+		var ee map[string][]string = make(map[string][]string)
 		for _, err := range err.(validator.ValidationErrors) {
 			fld := reflect.ValueOf(req).Type()
 			a, _ := fld.FieldByName(err.Field())
@@ -62,27 +60,27 @@ func (h *handler) CreateAuthor(ctx *gin.Context) {
 				}
 			}
 
-			errors[a.Tag.Get("json")] = append(errors[err.Field()], message)
+			ee[a.Tag.Get("json")] = append(ee[err.Field()], message)
 		}
 
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": errors, "timestamp": time.Now().Unix(), "message": "Bad request"})
+		rest.BadRequestWithDetail(ctx, errors.New("One or more fields are invalid"), ee)
 		return
 	}
 
 	if author, err := h.repo.GetByEmail(ctx, req.Email); err != nil && !errors.Is(err, domain.ErrAuthorNotFound) {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "timestamp": time.Now().Unix(), "message": "Internal server error"})
+		rest.InternalServerError(ctx)
 		return
 	} else if author != nil {
-		ctx.JSON(http.StatusConflict, gin.H{"error": "author already exists", "timestamp": time.Now().Unix(), "message": "Conflict"})
+		rest.Conflict(ctx, errors.New("Already exists an author with the given email"))
 		return
 	}
 
 	author := domain.NewAuthor(req.Name, req.Email, req.Description)
 
 	if err := h.repo.Create(ctx, author); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "timestamp": time.Now().Unix(), "message": "Internal server error"})
+		rest.InternalServerError(ctx)
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	rest.Created(ctx)
 }
